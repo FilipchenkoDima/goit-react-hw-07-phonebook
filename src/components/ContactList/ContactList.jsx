@@ -1,21 +1,29 @@
 import { nanoid } from 'nanoid';
 import { ListBtn, ListItem, ListWrapper } from './ContactList.styled';
-import { useSelector, useDispatch } from 'react-redux';
-import { deleteContact } from 'redux/contactsSlice';
+import { useSelector } from 'react-redux';
+import {
+  useGetContactsQuery,
+  useDeleteContactMutation,
+} from 'redux/contactsSlice';
+import { selectFilter } from 'redux/selectors';
 
 export const ContactList = () => {
-  const dispatch = useDispatch();
+  const { data } = useGetContactsQuery();
 
-  const contacts = useSelector(state => state.contacts.contacts);
-  const filter = useSelector(state => state.filter.filter);
+  const [deleteContact] = useDeleteContactMutation();
+  const filter = useSelector(selectFilter);
 
   const handleDeleteContact = id => {
-    dispatch(deleteContact(id));
+    deleteContact(id);
   };
+
+  if (!data) {
+    return;
+  }
 
   const normalizeFilter = filter.toLocaleLowerCase();
 
-  const filterContacts = contacts.filter(contact => {
+  const filterContacts = data.filter(contact => {
     return contact.name.toLocaleLowerCase().includes(normalizeFilter);
   });
 
@@ -25,7 +33,7 @@ export const ContactList = () => {
         return (
           <ListItem key={nanoid()}>
             <p>
-              {contact.name}: {contact.number}
+              {contact.name}: {contact.phone}
             </p>
             <ListBtn
               type="button"
